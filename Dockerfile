@@ -84,7 +84,6 @@ RUN chown odoo /etc/odoo/odoo.conf
 RUN mkdir -p /mnt/extra-addons \
         && chown -R odoo /mnt/extra-addons 
 VOLUME ["/mnt/extra-addons"]
-SQUASH
 
 # Expose Odoo services
 EXPOSE 8069 8071
