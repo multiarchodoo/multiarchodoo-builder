@@ -24,7 +24,7 @@ RUN apk add --update --no-cache \
     nodejs \
     nodejs-npm \
     g++ make py3-cffi openssl-dev libffi-dev \
-    && update-ca-certificates  
+    && update-ca-certificates
 
 
 # Other requirements and recommendations to run Odoo
@@ -78,11 +78,12 @@ RUN  mkdir /opt || true \
 # Copy entrypoint script and Odoo configuration file
 COPY ./entrypoint.sh /
 COPY ./odoo.conf /etc/odoo/
+COPY ./odoo.conf /odoo.conf.init
 RUN chown odoo /etc/odoo/odoo.conf
 
 # Mount /mnt/extra-addons for users addons
 RUN mkdir -p /mnt/extra-addons \
-        && chown -R odoo /mnt/extra-addons 
+        && chown -R odoo /mnt/extra-addons
 VOLUME ["/mnt/extra-addons"]
 
 # Expose Odoo services
@@ -95,4 +96,3 @@ ENV ODOO_RC /etc/odoo/odoo.conf
 ENTRYPOINT ["/entrypoint.sh"]
 
 CMD ["odoo"]
-

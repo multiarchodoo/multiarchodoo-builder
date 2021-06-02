@@ -1,5 +1,7 @@
 #!/bin/bash
 
+test -e /etc/odoo/odoo.conf || cp /odoo.conf.init /etc/odoo/odoo.conf
+chown odoo /etc/odoo/odoo.conf
 set -e
 
 # set the postgres database host, port, user and password according to the environment

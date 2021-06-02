@@ -1,0 +1,85 @@
+version: '3.2'
+services:
+  web:
+    hostname: instancename.0.odoo.domain.lan
+    #image: odoo:12.0
+    image: 254.254.254.254:5000/multiarchodoo/multiarchodoo
+#    build: .
+#    network_mode: "host"
+    depends_on:
+      - mydb
+    ports:
+      - target: 8069
+        published: 8041
+        protocol: tcp
+        mode: ingress
+
+#      - 0.0.0.0:8041:8069
+#    - 0.0.0.0:80:8080:mode=host,target=80,published=8080,protocol=tcp
+    environment:
+    - HOST=mydb-instancename
+    - USER=odoo
+    - PASSWORD=myodoo
+    - SMTP_SERVER=254.254.254.254
+    - SMTP_PORT=2500
+    - SMTP_USER=no-reply@odoo.domain.lan
+    - SMTP_PASSWORD=DummySMTP
+    #  - SMTP_PASSWORD=your_password
+    #  - SMTP_PROTOCOL=tls
+    tty: true
+    command: -- --dev=reload
+    volumes:
+      - filestore:/var/lib/odoo/filestore/
+      - extra-addons:/mnt/extra-addons
+    tmpfs:
+      - /var/lib/odoo/sessions
+#      - ./etc:/etc/odoo
+    logging:
+        driver: "json-file"
+        options:
+            max-size: "50m"
+    deploy:
+      placement:
+        constraints: [node.role == worker]
+        constraints: [node.labels.runner == true]
+#    networks:
+#      - frontend
+  mydb:
+    hostname: mydb-instancename
+    image: postgres:10
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_PASSWORD=odoopass
+      - POSTGRES_USER=odoo
+    restart: unless-stopped
+    volumes:
+      - postgresql:/var/lib/postgresql/data
+    restart: always
+    logging:
+        driver: "json-file"
+        options:
+            max-size: "50m"
+    deploy:
+      placement:
+        constraints: [node.role == worker]
+
+volumes:
+  postgresql:
+    driver_opts:
+      type: "nfs"
+      o: "addr=254.254.254.254,nfsvers=4.1,rw,noatime,async,rsize=65536,wsize=65536,namlen=255,soft,proto=tcp,timeo=300,retrans=3,port=2049,nolock,soft,rw"
+      device: ":/path/on/nfs/instancename-odoo/postgresql"
+  extra-addons:
+    driver_opts:
+      type: "nfs"
+      o: "addr=254.254.254.254,nfsvers=4.1,rw,noatime,async,rsize=65536,wsize=65536,namlen=255,soft,proto=tcp,timeo=300,retrans=3,port=2049,nolock,soft,rw"
+      device: ":/path/on/nfs/instancename-odoo/extra-addons"
+  filestore:
+    driver: local
+    driver_opts:
+      type: "nfs"
+      o: "addr=254.254.254.254,nfsvers=4.1,rw,noatime,async,rsize=65536,wsize=65536,namlen=255,soft,proto=tcp,timeo=300,retrans=3,port=2049,nolock,soft,rw"
+      device: ":/path/on/nfs/instancename-odoo/filestore"
+
+#networks:
+#  frontend:
