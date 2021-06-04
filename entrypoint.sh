@@ -1,5 +1,6 @@
 #!/bin/bash
 
+test -e /etc/odoo/odoo.conf || echo "using default config for /etc/odoo/odoo.conf"
 test -e /etc/odoo/odoo.conf || cp /odoo.conf.init /etc/odoo/odoo.conf
 chown odoo /etc/odoo/odoo.conf
 set -e

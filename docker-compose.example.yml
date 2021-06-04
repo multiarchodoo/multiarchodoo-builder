@@ -33,8 +33,8 @@ services:
     tty: true
     command: -- --dev=reload
     volumes:
-      - filestore:/var/lib/odoo/filestore/
-      - extra-addons:/mnt/extra-addons
+      - ./filestore:/var/lib/odoo/filestore/
+      - ./extra-addons:/mnt/extra-addons
     tmpfs:
       - /var/lib/odoo/sessions
 #      - ./etc:/etc/odoo
@@ -57,33 +57,33 @@ services:
       - POSTGRES_USER=odoo
     restart: unless-stopped
     volumes:
-      - postgresql:/var/lib/postgresql/data
+      - ./postgresql:/var/lib/postgresql/data
     restart: always
     logging:
         driver: "json-file"
         options:
             max-size: "50m"
-    deploy:
-      placement:
-        constraints: [node.role == worker]
+##    deploy:
+##      placement:
+##        constraints: [node.role == worker]
 
-volumes:
-  postgresql:
-    driver_opts:
-      type: "nfs"
-      o: "addr=254.254.254.254,nfsvers=4.1,rw,noatime,async,rsize=65536,wsize=65536,namlen=255,soft,proto=tcp,timeo=300,retrans=3,port=2049,nolock,soft,rw"
-      device: ":/path/on/nfs/instancename-odoo/postgresql"
-  extra-addons:
-    driver_opts:
-      type: "nfs"
-      o: "addr=254.254.254.254,nfsvers=4.1,rw,noatime,async,rsize=65536,wsize=65536,namlen=255,soft,proto=tcp,timeo=300,retrans=3,port=2049,nolock,soft,rw"
-      device: ":/path/on/nfs/instancename-odoo/extra-addons"
-  filestore:
-    driver: local
-    driver_opts:
-      type: "nfs"
-      o: "addr=254.254.254.254,nfsvers=4.1,rw,noatime,async,rsize=65536,wsize=65536,namlen=255,soft,proto=tcp,timeo=300,retrans=3,port=2049,nolock,soft,rw"
-      device: ":/path/on/nfs/instancename-odoo/filestore"
+##volumes:
+##  postgresql:
+##    driver_opts:
+##      type: "nfs"
+##      o: "addr=254.254.254.254,nfsvers=4.1,rw,noatime,async,rsize=65536,wsize=65536,namlen=255,soft,proto=tcp,timeo=300,retrans=3,port=2049,nolock,soft,rw"
+##      device: ":/path/on/nfs/instancename-odoo/postgresql"
+##  extra-addons:
+##    driver_opts:
+##      type: "nfs"
+##      o: "addr=254.254.254.254,nfsvers=4.1,rw,noatime,async,rsize=65536,wsize=65536,namlen=255,soft,proto=tcp,timeo=300,retrans=3,port=2049,nolock,soft,rw"
+##      device: ":/path/on/nfs/instancename-odoo/extra-addons"
+##  filestore:
+##    driver: local
+##    driver_opts:
+##      type: "nfs"
+##      o: "addr=254.254.254.254,nfsvers=4.1,rw,noatime,async,rsize=65536,wsize=65536,namlen=255,soft,proto=tcp,timeo=300,retrans=3,port=2049,nolock,soft,rw"
+##      device: ":/path/on/nfs/instancename-odoo/filestore"
 
 #networks:
 #  frontend:
