@@ -30,6 +30,7 @@ RUN apk add --update --no-cache \
 # Other requirements and recommendations to run Odoo
 # See https://github.com/$ODOO_SOURCE/blob/$ODOO_VERSION/debian/control
 RUN apk add --no-cache \
+        inotify-tools \
         git \
         ghostscript \
         icu \
