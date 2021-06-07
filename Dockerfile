@@ -1,122 +1,96 @@
-#FROM armhf/alpine:edge
-#FROM alpine:3.12
-#FROM surnet/alpine-wkhtmltopdf:3.13.5-0.12.6-full
-FROM surnet/alpine-wkhtmltopdf:3.13.5-0.12.5-full
-LABEL maintainer="commits@secret.fyi"
+FROM debian:buster-slim
+MAINTAINER Odoo S.A. <info@odoo.com>
 
+SHELL ["/bin/bash", "-xo", "pipefail", "-c"]
 
+# Generate locale C.UTF-8 for postgres and general locale data
+ENV LANG C.UTF-8
 
-#RUN echo "http://dl-3.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
-RUN apk add --update --no-cache \
-    bash \
-    python3-dev \
-    py-pip \
-    ca-certificates \
-#    wkhtmltopdf=0.12.5-r1 \
-    tar \
-    wget \
-    gcc \
-    py3-lxml \
-    linux-headers \
-    postgresql-dev \
-    libxml2-dev \
-    libxslt-dev \
-    musl-dev \
-    jpeg-dev \
-    zlib-dev \
-    openldap-dev\
-    nodejs \
-    nodejs-npm \
-    g++ make py3-cffi openssl-dev libffi-dev \
-    && update-ca-certificates
+# Install some deps, lessc and less-plugin-clean-css, and wkhtmltopdf
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        ca-certificates \
+        curl \
+        dirmngr \
+        fonts-noto-cjk \
+        gnupg \
+        libssl-dev \
+        node-less \
+        npm \
+        python3-num2words \
+        python3-pdfminer \
+        python3-pip \
+        python3-phonenumbers \
+        python3-pyldap \
+        python3-qrcode \
+        python3-renderpm \
+        python3-setuptools \
+        python3-slugify \
+        python3-vobject \
+        python3-watchdog \
+        python3-xlrd \
+        python3-xlwt \
+        xz-utils \
+    && apt-get -y clean && rm -rf /var/lib/apt/lists/*
 
+ RUN if [ "$(uname -m|grep x86_64 |wc -l)" -ne 0  ]  ;then  curl -o wkhtmltox.deb -sSL https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.buster_amd64.deb \
+    && echo 'ea8277df4297afc507c61122f3c349af142f31e5 wkhtmltox.deb' | sha1sum -c - \
+     && apt-get update && apt-get install -y --no-install-recommends ./wkhtmltox.deb \
+ wkhtmltox.deb ; else true;fi
 
-# Other requirements and recommendations to run Odoo
-# See https://github.com/$ODOO_SOURCE/blob/$ODOO_VERSION/debian/control
-RUN apk add --no-cache \
-        inotify-tools \
-        git \
-        ghostscript \
-        icu \
-        libev \
-        nodejs \
-        openssl \
-        postgresql-libs \
-        poppler-utils \
-        ruby \
-        su-exec
+ RUN if [ "$(uname -m|grep aarch64 |wc -l)" -ne 0  ]  ;then curl -o wkhtmltox.deb -sSL https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.buster_arm64.deb \
+     && echo '43d0db99ab0e6b5f60b465a49c764c50d6b31337 wkhtmltox.deb' | sha1sum -c - \
+     && apt-get update && apt-get install -y --no-install-recommends ./wkhtmltox.deb \
+  wkhtmltox.deb ; else true;fi
+RUN wkhtmltopdf --version
 
+# install latest postgresql-client
+RUN echo 'deb http://apt.postgresql.org/pub/repos/apt/ buster-pgdg main' > /etc/apt/sources.list.d/pgdg.list \
+    && GNUPGHOME="$(mktemp -d)" \
+    && export GNUPGHOME \
+    && repokey='B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8' \
+    && gpg --batch --keyserver keyserver.ubuntu.com --recv-keys "${repokey}" \
+    && gpg --batch --armor --export "${repokey}" > /etc/apt/trusted.gpg.d/pgdg.gpg.asc \
+    && gpgconf --kill all \
+    && rm -rf "$GNUPGHOME" \
+    && apt-get update  \
+    && apt-get install --no-install-recommends -y postgresql-client \
+    && rm -f /etc/apt/sources.list.d/pgdg.list \
+    && rm -rf /var/lib/apt/lists/*
 
-ARG WKHTMLTOX_VERSION="0.12"
-ARG WKHTMLTOX_SUBVERSION="5"
-# Special case for wkhtmltox
-# HACK https://github.com/wkhtmltopdf/wkhtmltopdf/issues/3265
-# Idea from https://hub.docker.com/r/loicmahieu/alpine-wkhtmltopdf/
-# Use prepackaged wkhtmltopdf and wrap it with a dummy X server
-#RUN apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing wkhtmltopdf=0.12.5-r1
+# Install rtlcss (on Debian buster)
+RUN npm install -g rtlcss
 
-RUN apk add --no-cache xvfb ttf-dejavu ttf-freefont fontconfig dbus
-COPY bin/wkhtmltox.sh /usr/local/bin/wkhtmltoimage
-RUN ln /usr/local/bin/wkhtmltoimage /usr/local/bin/wkhtmltopdf
-RUN mkdir /realbin
-RUN which wkhtmltopdf
-RUN mv /bin/wkhtmltopdf /realbin/
-RUN mv /bin/wkhtmltoimage /realbin/
-
-
-RUN addgroup odoo && adduser odoo -s /bin/sh -D -G odoo \
-    && echo "odoo ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
-
-#    && mkdir /opt \
-#    && wget https://nightly.odoo.com/14.0/nightly/src/odoo_14.0.latest.tar.gz \
-#    && tar -xzf odoo_14.0.latest.tar.gz -C /opt \
-#    && cd /opt/odoo-14.0-20170101 \
-#    && rm odoo_14.0.latest.tar.gz \
-
-
-###COPY odoo_14.0.latest.tar.gz /tmp/
-##############Turns out libexecinfo-dev is only available in the edge repo, so what I did is add the edge repo with the tag "edge" and use that tag to fetch it with apk. Like so:
-############
-############RUN echo "@edge http://nl.alpinelinux.org/alpine/edge/main" >> /etc/apk/repositories
-############
-############RUN apk update
-############RUN apk add \
-############        build-base \
-############        libtool \
-############        autoconf \
-############        automake \
-############        jq \
-############        openssh \
-############        python \
-###########        libexecinfo-dev@edge
-
-RUN npm update -g &&  npm install -g less less-plugin-clean-css
-
-RUN  mkdir /opt || true \
-    && /bin/bash -c "wget -q -c -O- https://nightly.odoo.com/14.0/nightly/src/odoo_14.0.latest.tar.gz | tar -xzv -C /opt" \
-    && cd /opt/odoo* \
-    && pip install -r requirements.txt \
-    && python3 setup.py install \
-    && rm -r /opt/odoo-*
+# Install Odoo
+ENV ODOO_VERSION 14.0
+ARG ODOO_RELEASE=20210525
+ARG ODOO_SHA=1d095badf1a6639b0d029a69ac4a43d360280d95
+RUN curl -o odoo.deb -sSL http://nightly.odoo.com/${ODOO_VERSION}/nightly/deb/odoo_${ODOO_VERSION}.${ODOO_RELEASE}_all.deb \
+    && echo "${ODOO_SHA} odoo.deb" | sha1sum -c - \
+    && apt-get update \
+    && apt-get -y install --no-install-recommends ./odoo.deb \
+    && rm -rf /var/lib/apt/lists/* odoo.deb
 
 # Copy entrypoint script and Odoo configuration file
 COPY ./entrypoint.sh /
 COPY ./odoo.conf /etc/odoo/
-COPY ./odoo.conf /odoo.conf.init
-RUN chown odoo /etc/odoo/odoo.conf
 
-# Mount /mnt/extra-addons for users addons
-RUN mkdir -p /mnt/extra-addons \
-        && chown -R odoo /mnt/extra-addons
-VOLUME ["/mnt/extra-addons"]
+# Set permissions and Mount /var/lib/odoo to allow restoring filestore and /mnt/extra-addons for users addons
+RUN chown odoo /etc/odoo/odoo.conf \
+    && mkdir -p /mnt/extra-addons \
+    && chown -R odoo /mnt/extra-addons
+VOLUME ["/var/lib/odoo", "/mnt/extra-addons"]
 
 # Expose Odoo services
-EXPOSE 8069 8071
+EXPOSE 8069 8071 8072
 
 # Set the default config file
 ENV ODOO_RC /etc/odoo/odoo.conf
 
-# Set default user when running the container
-ENTRYPOINT ["/entrypoint.sh"]
+COPY wait-for-psql.py /usr/local/bin/wait-for-psql.py
 
+# Set default user when running the container
+USER odoo
+
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["odoo"]
