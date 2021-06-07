@@ -5,11 +5,11 @@ SHELL ["/bin/bash", "-xo", "pipefail", "-c"]
 
 # Generate locale C.UTF-8 for postgres and general locale data
 ENV LANG C.UTF-8
-
+##START MOD
 
 #RUN echo "deb http://ftp.debian.org/debian buster-backports main" >> /etc/apt/sources.list.d/backports.list
 #RUN apt update && apt -y -t buster-backports upgrade
-RUN apt update && apt -y install curl
+RUN apt update && apt -y install curl wget && apt-get -y upgrade
 RUN curl -sL https://deb.nodesource.com/setup_12.x |  bash -
 RUN apt update && apt-get install -y nodejs
 RUN node --version
@@ -65,6 +65,8 @@ RUN echo 'deb http://apt.postgresql.org/pub/repos/apt/ buster-pgdg main' > /etc/
     && apt-get install --no-install-recommends -y postgresql-client \
     && rm -f /etc/apt/sources.list.d/pgdg.list \
     && rm -rf /var/lib/apt/lists/*
+
+## END MOD
 
 # Install rtlcss (on Debian buster)
 RUN npm install -g rtlcss
