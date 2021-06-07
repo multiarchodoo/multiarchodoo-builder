@@ -1,6 +1,7 @@
 #FROM armhf/alpine:edge
 #FROM alpine:3.12
-FROM surnet/alpine-wkhtmltopdf:3.13.5-0.12.6-full
+#FROM surnet/alpine-wkhtmltopdf:3.13.5-0.12.6-full
+FROM surnet/alpine-wkhtmltopdf:3.13.5-0.12.5-full
 LABEL maintainer="commits@secret.fyi"
 
 
@@ -74,23 +75,22 @@ RUN addgroup odoo && adduser odoo -s /bin/sh -D -G odoo \
 
 
 ###COPY odoo_14.0.latest.tar.gz /tmp/
-##Turns out libexecinfo-dev is only available in the edge repo, so what I did is add the edge repo with the tag "edge" and use that tag to fetch it with apk. Like so:
+##############Turns out libexecinfo-dev is only available in the edge repo, so what I did is add the edge repo with the tag "edge" and use that tag to fetch it with apk. Like so:
+############
+############RUN echo "@edge http://nl.alpinelinux.org/alpine/edge/main" >> /etc/apk/repositories
+############
+############RUN apk update
+############RUN apk add \
+############        build-base \
+############        libtool \
+############        autoconf \
+############        automake \
+############        jq \
+############        openssh \
+############        python \
+###########        libexecinfo-dev@edge
 
-RUN echo "@edge http://nl.alpinelinux.org/alpine/edge/main" >> /etc/apk/repositories
-
-RUN apk update
-RUN apk add \
-        build-base \
-        libtool \
-        autoconf \
-        automake \
-        jq \
-        openssh \
-        python \
-        libexecinfo-dev@edge
-
-
-RUN  npm install -g less less-plugin-clean-css
+RUN npm update -g &&  npm install -g less less-plugin-clean-css
 
 RUN  mkdir /opt || true \
     && /bin/bash -c "wget -q -c -O- https://nightly.odoo.com/14.0/nightly/src/odoo_14.0.latest.tar.gz | tar -xzv -C /opt" \
