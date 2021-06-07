@@ -3,7 +3,7 @@
 FROM surnet/alpine-wkhtmltopdf:3.13.5-0.12.6-full
 LABEL maintainer="commits@secret.fyi"
 
-RUN which wkhtmltopdf
+
 
 #RUN echo "http://dl-3.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
 RUN apk add --update --no-cache \
@@ -58,8 +58,9 @@ RUN apk add --no-cache xvfb ttf-dejavu ttf-freefont fontconfig dbus
 COPY bin/wkhtmltox.sh /usr/local/bin/wkhtmltoimage
 RUN ln /usr/local/bin/wkhtmltoimage /usr/local/bin/wkhtmltopdf
 RUN mkdir /realbin
-RUN mv /usr/bin/wkhtmltopdf /realbin/
-RUN mv /usr/bin/wkhtmltoimage /realbin/
+RUN which wkhtmltopdf
+RUN mv /bin/wkhtmltopdf /realbin/
+RUN mv /bin/wkhtmltoimage /realbin/
 
 
 RUN addgroup odoo && adduser odoo -s /bin/sh -D -G odoo \
