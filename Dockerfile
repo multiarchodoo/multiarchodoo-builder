@@ -27,7 +27,7 @@ RUN apk add --update --no-cache \
     g++ make py3-cffi openssl-dev libffi-dev \
     && update-ca-certificates
 
-
+RUN which wkhtmltopdf
 # Other requirements and recommendations to run Odoo
 # See https://github.com/$ODOO_SOURCE/blob/$ODOO_VERSION/debian/control
 RUN apk add --no-cache \
