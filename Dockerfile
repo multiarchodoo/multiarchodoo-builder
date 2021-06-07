@@ -6,6 +6,14 @@ SHELL ["/bin/bash", "-xo", "pipefail", "-c"]
 # Generate locale C.UTF-8 for postgres and general locale data
 ENV LANG C.UTF-8
 
+
+#RUN echo "deb http://ftp.debian.org/debian buster-backports main" >> /etc/apt/sources.list.d/backports.list
+#RUN apt update && apt -y -t buster-backports upgrade
+RUN apt update && apt -y install curl
+RUN curl -sL https://deb.nodesource.com/setup_12.x |  bash -
+RUN apt update && apt-get install -y nodejs
+RUN node --version
+
 # Install some deps, lessc and less-plugin-clean-css, and wkhtmltopdf
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -16,7 +24,7 @@ RUN apt-get update && \
         gnupg \
         libssl-dev \
         node-less \
-        npm \
+        #npm \
         python3-num2words \
         python3-pdfminer \
         python3-pip \
