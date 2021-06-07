@@ -3,6 +3,8 @@
 FROM surnet/alpine-wkhtmltopdf:3.13.5-0.12.6-full
 LABEL maintainer="commits@secret.fyi"
 
+RUN which wkhtmltopdf
+
 #RUN echo "http://dl-3.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
 RUN apk add --update --no-cache \
     bash \
@@ -27,7 +29,7 @@ RUN apk add --update --no-cache \
     g++ make py3-cffi openssl-dev libffi-dev \
     && update-ca-certificates
 
-RUN which wkhtmltopdf
+
 # Other requirements and recommendations to run Odoo
 # See https://github.com/$ODOO_SOURCE/blob/$ODOO_VERSION/debian/control
 RUN apk add --no-cache \
