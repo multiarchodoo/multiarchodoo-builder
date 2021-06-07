@@ -1,5 +1,6 @@
 #FROM armhf/alpine:edge
-FROM alpine:3.12
+#FROM alpine:3.12
+FROM surnet/alpine-wkhtmltopdf:3.13.5-0.12.6-full
 LABEL maintainer="commits@secret.fyi"
 
 #RUN echo "http://dl-3.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
@@ -49,10 +50,14 @@ ARG WKHTMLTOX_SUBVERSION="5"
 # HACK https://github.com/wkhtmltopdf/wkhtmltopdf/issues/3265
 # Idea from https://hub.docker.com/r/loicmahieu/alpine-wkhtmltopdf/
 # Use prepackaged wkhtmltopdf and wrap it with a dummy X server
-RUN apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing wkhtmltopdf=0.12.5-r1
+#RUN apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing wkhtmltopdf=0.12.5-r1
+
 RUN apk add --no-cache xvfb ttf-dejavu ttf-freefont fontconfig dbus
 COPY bin/wkhtmltox.sh /usr/local/bin/wkhtmltoimage
 RUN ln /usr/local/bin/wkhtmltoimage /usr/local/bin/wkhtmltopdf
+RUN mkdir /realbin
+RUN mv /usr/bin/wkhtmltopdf /realbin/
+RUN mv /usr/bin/wkhtmltoimage /realbin/
 
 
 RUN addgroup odoo && adduser odoo -s /bin/sh -D -G odoo \
