@@ -17,7 +17,7 @@ RUN node --version
 # Install some deps, lessc and less-plugin-clean-css, and wkhtmltopdf
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        ca-certificates \
+        git unzip ca-certificates \
         curl \
         dirmngr \
         fonts-noto-cjk \
