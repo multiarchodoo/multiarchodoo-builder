@@ -1,4 +1,4 @@
-FROM debian:buster-slim
+FROM debian:bullseye-slim
 MAINTAINER Odoo S.A. <info@odoo.com>
 
 SHELL ["/bin/bash", "-xo", "pipefail", "-c"]
@@ -7,12 +7,12 @@ SHELL ["/bin/bash", "-xo", "pipefail", "-c"]
 ENV LANG C.UTF-8
 ##START MOD
 
-#RUN echo "deb http://ftp.debian.org/debian buster-backports main" >> /etc/apt/sources.list.d/backports.list
-#RUN apt update && apt -y -t buster-backports upgrade
-RUN apt update && apt -y install curl wget && apt-get -y upgrade
-RUN curl -sL https://deb.nodesource.com/setup_12.x |  bash -
-RUN apt update && apt-get install -y nodejs
-RUN node --version
+##RUN echo "deb http://ftp.debian.org/debian buster-backports main" >> /etc/apt/sources.list.d/backports.list
+##RUN apt update && apt -y -t buster-backports upgrade
+#RUN apt update && apt -y install curl wget && apt-get -y upgrade
+#RUN curl -sL https://deb.nodesource.com/setup_12.x |  bash -
+#RUN apt update && apt-get install -y nodejs
+#RUN node --version
 
 # Install some deps, lessc and less-plugin-clean-css, and wkhtmltopdf
 RUN apt-get update && \
@@ -24,8 +24,17 @@ RUN apt-get update && \
         gnupg \
         libssl-dev \
         node-less \
-        #npm \
+        ca-certificates \
+        curl \
+        dirmngr \
+        fonts-noto-cjk \
+        gnupg \
+        libssl-dev \
+        node-less \
+        npm \
+        python3-magic \
         python3-num2words \
+        python3-odf \
         python3-pdfminer \
         python3-pip \
         python3-phonenumbers \
@@ -39,7 +48,7 @@ RUN apt-get update && \
         python3-xlrd \
         python3-xlwt \
         xz-utils \
-    && apt-get -y clean && rm -rf /var/lib/apt/lists/*
+    && apt-get -y clean && rm -rf /var/lib/apt/lists/* || true 
 
  RUN if [ "$(uname -m|grep x86_64 |wc -l)" -ne 0  ]  ;then  curl -o wkhtmltox.deb -sSL https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.buster_amd64.deb \
     && echo 'ea8277df4297afc507c61122f3c349af142f31e5 wkhtmltox.deb' | sha1sum -c - \
@@ -53,7 +62,7 @@ RUN apt-get update && \
 RUN wkhtmltopdf --version
 
 # install latest postgresql-client
-RUN echo 'deb http://apt.postgresql.org/pub/repos/apt/ buster-pgdg main' > /etc/apt/sources.list.d/pgdg.list \
+RUN echo 'deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main' > /etc/apt/sources.list.d/pgdg.list \
     && GNUPGHOME="$(mktemp -d)" \
     && export GNUPGHOME \
     && repokey='B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8' \
@@ -72,9 +81,9 @@ RUN echo 'deb http://apt.postgresql.org/pub/repos/apt/ buster-pgdg main' > /etc/
 RUN npm install -g rtlcss
 
 # Install Odoo
-ENV ODOO_VERSION 14.0
-ARG ODOO_RELEASE=20210917
-ARG ODOO_SHA=43d3a8cc8eec8358a5ebe22553780723b27c44ca
+ENV ODOO_VERSION 16.0
+ARG ODOO_RELEASE=20230710
+ARG ODOO_SHA=faf46a6ddcf6a8d4d30a743c389db0e414071ce4
 RUN curl -o odoo.deb -sSL http://nightly.odoo.com/${ODOO_VERSION}/nightly/deb/odoo_${ODOO_VERSION}.${ODOO_RELEASE}_all.deb \
     && echo "${ODOO_SHA} odoo.deb" | sha1sum -c - \
     && apt-get update \
